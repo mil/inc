@@ -1,0 +1,6 @@
+input_folder: in/
+output_folder: out/
+
+preferences_apply_recusivly: 
+  page: true
+  once_page_is_compiled: true

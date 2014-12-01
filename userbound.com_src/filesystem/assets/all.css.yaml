@@ -1,0 +1,10 @@
+page:
+  contents: 
+    - "_sass/all.sass"
+  scripts: sass
+
+once_page_is_compiled: 
+  prepends:  "/* Yo I'm compiled css */"
+  postpends: "/* End ma compiled css */"
+  scripts:
+    - minify_and_gzip_css

@@ -1,0 +1,12 @@
+page:
+  scripts: "markdown"
+
+once_page_is_compiled: 
+  prepends:  _partials/header.json
+  postpends: 
+    - _partials/blog_pagination.yaml
+    - _partials/footer.json
+  scripts:
+    - mustachify_variables
+    - pagination_links
+    - minify_html

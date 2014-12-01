@@ -1,0 +1,9 @@
+page:
+  scripts: "markdown"
+
+once_page_is_compiled: 
+  prepends:  _partials/header.html
+  postpends: _partials/footer.html
+  scripts:
+    - substitute_head
+    - minify_html

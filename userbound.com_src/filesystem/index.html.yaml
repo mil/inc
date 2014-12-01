@@ -1,0 +1,11 @@
+page:
+  contents: "index.md"
+  scripts: "markdown" # (optional)
+
+# (optional)
+once_page_is_compiled: 
+  prepends:  _partials/header.json
+  postpends: _partials/footer.json
+  scripts:
+    - substitute_head
+    - minify_html
