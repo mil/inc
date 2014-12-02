@@ -1,6 +1,6 @@
 page:
-  content: model_content.html
-  scripts: "markdown", "replace_variables"
+  content: _model_mustache_template.html
+  scripts: [ markdown, replace_variables]
 
 once_page_is_compiled: 
   prepends:  _partials/header.html

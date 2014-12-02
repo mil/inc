@@ -14,111 +14,107 @@ class String
 			:cyan    => 36, 
 			:white   => 37 
 		}
-		return "\e[#{colors[c] || c}m#{self}\e[0m"
+		"\e[#{colors[c] || c}m#{self}\e[0m"
 	end
-end
-
-
-$incscript_preferences = {
-  # Config_path, Input, and Output
-  # ==============================
-  :input_directory        => "input",
-  :output_directory       => "output",
-
-
-  # Recursive Prefs
-  # ===============
-  # Enabling recursive preferences
-  # makes it so that the 
-  :recursive_page_prefs   => true,
-  :recursive_post_prefs   => true,
-
-  # Passthroughs
-  # =============
-  # Passthrough extensions and files
-  # will be rendered as a 1-to-1 equivialnt
-  # in the output folder as they appear in
-  # the input folder.
-  #
-  # These files may be specified in two manners
-  # 1st you may specify all files with a particular
-  # extension (e.g. .jpg, .png, etc) will be passed through
-  #
-  # Alternativly, you may specify file or folder paths
-  # in which individual files will be passed through.
-  :passthrough_extensions => ["jpg"],
-  :passthrough_paths      => [ ".htaccess" ]
-}
-
-def log(msg_type, msg)
-  color = {
-    :error => :red
-  }[msg_type]
-
-  puts msg.color(color)
-end
-
-def assert(condition, error_msg)
-  if !condition
-    log :error, error_msg
-    exit
+  def dir_parts
+    self.split(File::SEPARATOR)
   end
 end
 
-def compile_file(file_path)
-  puts "COMPILING"
-  # Read file yaml
-  #
-  file_prefs = YAML.load_file file_path
+#$incscript_preferences = {
+#  :recursive_page_prefs   => true,
+#  :recursive_post_prefs   => true,
+#
+#  :passthrough_extensions => ["jpg"],
+#  :passthrough_paths      => [ ".htaccess" ]
+#}
 
-  file_prefs['scripts'].each do |f|
-    p "Reading file prefs" , f
+module Utilities
+  def log(msg_type, msg)
+    color = {
+      :error => :red
+    }[msg_type]
 
-
+    puts "#{'ERROR:'.color(:magenta)}\n#{msg.color(color)}"
   end
 
-end
-
-
-def compile(target_folder)
-  assert(
-    (File.exists? target_folder),
-   "Target folder is compatible incscript directory" 
-  )
-
-  @insc_prefs = {}
-  if File.exists? "_.incscript.yaml"
-    folder_prefs = YAML.load_file "._incscript.yaml"
-  end
-
-  # Merge folder prefs into insc_prefs
-  files = Dir.glob "*"
-
-  Dir.glob("*").select do |f|
-    if (File.directory? f) then
-    else
+  def assert(condition, error_msg)
+    if !condition
+      log :error, error_msg
+      exit
     end
   end
 
-  files.each do |f|
-    file_prefs = YAML.load_file f
+  def is_valid_incscript_folder?(folder)
+    return (
 
-    [folder_prefs, file_prefs].each do |f|
-      @insc_prefs.merge f
-    end
-
-    #compile_file f
-  end
-
-
-end
-
-def proccess_args
-  ARGV.each do |arg|
-    if arg == "compile"
-      compile "userbound.com_src"
-    end
+      (File.exists? "#{folder}/incscript_config.yaml") &&
+      (File.directory? "#{folder}/scripts") &&
+      (File.directory? "#{folder}/filesystem") 
+    )
   end
 end
 
-proccess_args
+
+
+class Incscript
+  include Utilities
+
+  def initialize(source_folder, destination_folder)
+    @incscript_root   = source_folder 
+    @incscript_config = YAML.load_file "#{@incscript_root}/incscript_config.yaml"
+    @filesystem       = "#{@incscript_root}/filesystem"
+    @scripts          = "#{@incscript_root}/scripts"
+
+
+    assert(
+      (is_valid_incscript_folder? @incscript_root),
+      [
+        "Source folder is not a compatible incscript directory",
+        "Ensure the following files and folders exist:",
+        "   #{@incscript_root}/filesystem/",
+        "   #{@incscript_root}/scripts/",
+        "   #{@incscript_root}/incscript_config.yaml",
+      ].join("\n")
+    )
+
+    compile_folder( @filesystem, {}, destination_folder)
+  end
+
+  #fp_contents =  File.open(f) { |f| f.read }
+
+
+  def compile_folder(source_folder, imported_prefs = {}, destination_folder = nil)
+    folder_prefs = (File.exists? "#{source_folder}/_incscript.yaml") ?  
+      (YAML.load_file "#{source_folder}/_incscript.yaml") : {}
+    prefs        = imported_prefs.merge! folder_prefs
+
+    #Dir.mkdir(
+
+
+    # Loop children files and folders 
+    Dir.glob("#{source_folder}/*").select do |f|
+      next if File.split(f).last[0] == '_'
+
+      if (File.directory? f) then
+        #puts "Processing folder #{f}"
+        p "----"
+        p "Place"
+        p f
+        p "into"
+        p destination_folder
+        p "----"
+        compile_folder(f, prefs, source_folder.dir_parts.last)
+      else
+        #puts "Processing file #{f}"
+
+        #file_prefs = YAML.load_file f
+        #@insc_prefs.merge! folder_prefs.merge file_prefs
+
+      end
+    end
+  end
+
+end
+
+Incscript.new( ARGV.first, ARGV.last )
