@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'fileutils'
 
 # Colorizing strings
 class String
@@ -89,7 +90,8 @@ class Incscript
       (YAML.load_file "#{source_folder}/_incscript.yaml") : {}
     prefs        = imported_prefs.merge! folder_prefs
 
-    #Dir.mkdir(
+    FileUtils.rm_rf destination_folder
+    Dir.mkdir destination_folder
 
 
     # Loop children files and folders 
@@ -97,18 +99,15 @@ class Incscript
       next if File.split(f).last[0] == '_'
 
       if (File.directory? f) then
-        #puts "Processing folder #{f}"
-        p "----"
-        p "Place"
-        p f
-        p "into"
-        p destination_folder
-        p "----"
-        compile_folder(f, prefs, source_folder.dir_parts.last)
+        compile_folder(f, prefs, "#{destination_folder}/#{f.dir_parts.last}")
       else
         #puts "Processing file #{f}"
+        
 
-        #file_prefs = YAML.load_file f
+        file_prefs = YAML.load_file f
+        File.open("#{destination_folder}/#{f.dir_parts.last}", 'w') do |f|
+          f.write "test"
+        end
         #@insc_prefs.merge! folder_prefs.merge file_prefs
 
       end
