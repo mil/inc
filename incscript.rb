@@ -102,7 +102,11 @@ class Incscript
         compile_folder(f, prefs, "#{destination_folder}/#{f.dir_parts.last}")
       else
         #puts "Processing file #{f}"
-        
+        target_directory = destination_folder
+        if File.extname(f) != ".yaml"
+          target_directory = "#{destination_folder}/#{f}"
+          Dir.mkdir destination_folder target_directory
+        end
 
         file_prefs = YAML.load_file f
         File.open("#{destination_folder}/#{f.dir_parts.last}", 'w') do |f|
