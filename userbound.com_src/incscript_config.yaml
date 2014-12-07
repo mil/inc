@@ -1,6 +1,11 @@
-input_folder: in/
-output_folder: out/
-
-preferences_apply_recusivly: 
+preferences_apply_recursivly: 
   page: true
   once_page_is_compiled: true
+
+# Passthroughs are files that are rendered in the output
+# as a 1-to-1 equivialnt as the input folder.
+passthrough:
+  extensions:
+  paths:
+
+variables_tmp_file: /tmp/incscript_vars.yaml

@@ -4,8 +4,8 @@ page:
 
 # (optional)
 once_page_is_compiled: 
-  prepends:  _partials/header.json
-  postpends: _partials/footer.json
+  prepends:  _partials/header.yaml
+  postpends: _partials/footer.yaml
   scripts:
     - substitute_head
     - minify_html
