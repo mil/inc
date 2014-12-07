@@ -85,6 +85,24 @@ class Incscript
   #fp_contents =  File.open(f) { |f| f.read }
 
 
+
+  def parse_file(file_path)
+    # Reads given file and returns an object 
+    # with :frontend_matter and :content symbols
+    # If file has no FEM, symbol will be nil
+    # : {
+    #   :frontend_matter => {},
+    #   :content => "content after FEM"
+    # }
+    
+    file_contents = File.open(file_path, 'r').read
+    file_contents.each_line do |line|
+      p line 
+    end
+
+  end
+
+
   def compile_folder(source_folder, imported_prefs = {}, destination_folder = nil)
     folder_prefs = (File.exists? "#{source_folder}/_incscript.yaml") ?  
       (YAML.load_file "#{source_folder}/_incscript.yaml") : {}
@@ -101,18 +119,24 @@ class Incscript
       if (File.directory? f) then
         compile_folder(f, prefs, "#{destination_folder}/#{f.dir_parts.last}")
       else
-        #puts "Processing file #{f}"
         target_directory = destination_folder
-        if File.extname(f) != ".yaml"
-          target_directory = "#{destination_folder}/#{f}"
-          Dir.mkdir destination_folder target_directory
+        target_file = f.dir_parts.last
+
+        if @incscript_config['create_wrapper_folder']['extensions'].include? File.extname(f)[1..-1]
+          created_folder   = File.basename(f, File.extname(f))
+          target_directory = "#{destination_folder}/#{created_folder}"
+          target_file      = "index.html"
+
+          Dir.mkdir target_directory
         end
 
-        file_prefs = YAML.load_file f
-        File.open("#{destination_folder}/#{f.dir_parts.last}", 'w') do |f|
+        parse_file(f)
+
+        #file_prefs = YAML.load_file f
+        #@insc_prefs.merge! folder_prefs.merge file_prefs
+        File.open("#{target_directory}/#{target_file}", 'w') do |f|
           f.write "test"
         end
-        #@insc_prefs.merge! folder_prefs.merge file_prefs
 
       end
     end

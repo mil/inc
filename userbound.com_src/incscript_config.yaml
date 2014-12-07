@@ -8,4 +8,9 @@ passthrough:
   extensions:
   paths:
 
+create_wrapper_folder:
+  extensions: [ md ]
+  paths:
+
+
 variables_tmp_file: /tmp/incscript_vars.yaml
