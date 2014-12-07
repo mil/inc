@@ -1,3 +1,4 @@
+---
 page:
   contents: 
     - "_js/FancyZoom.js"
@@ -15,3 +16,4 @@ once_page_is_compiled:
   postpends: "/* End ma javascripts */"
   scripts:
     - minify_js
+---
