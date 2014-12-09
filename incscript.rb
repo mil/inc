@@ -95,11 +95,23 @@ class Incscript
     #   :content => "content after FEM"
     # }
     
-    file_contents = File.open(file_path, 'r').read
-    file_contents.each_line do |line|
-      p line 
-    end
 
+    return_obj = {
+      :frontend_matter => nil,
+      :content         => ""
+    }
+
+    # limitation: does not deal with markdown '---' nested within page content
+    fem_string = ""; within_fem = false  
+    File.open(file_path, 'r').read.each_line do |line|
+      ((within_fem = !within_fem) && next) if line.chomp == "---" 
+      puts "<#{line.chomp}>"
+
+      (within_fem ? fem_string : return_obj[:content]) << line
+    end
+    return_obj[:frontend_matter] = YAML.load fem_string
+
+    return_obj
   end
 
 
@@ -130,12 +142,12 @@ class Incscript
           Dir.mkdir target_directory
         end
 
-        parse_file(f)
+        parsed_file = parse_file f
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write "test"
+          f.write parsed_file[:content]
         end
 
       end
