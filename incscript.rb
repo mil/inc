@@ -47,6 +47,12 @@ module Utilities
     end
   end
 
+  def arrayify(string_or_array)
+    string_or_array.class == Array ? 
+      string_or_array : 
+      [ string_or_array ]
+  end
+
   def is_valid_incscript_folder?(folder)
     return (
 
@@ -171,8 +177,7 @@ class Incscript
           parsed_file[:content], 
 
           # [Array] of Scripts
-          (prefs['page']['scripts'].class == Array ? 
-          prefs['page']['scripts'] : [ prefs['page']['scripts'] ])
+          arrayify(prefs['page']['scripts'])
         )
 
 
