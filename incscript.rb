@@ -140,12 +140,12 @@ class Incscript
   def compile_file(file_path, prefs)
     parsed = extract_file_obj(file_path)
 
-    post_content = pipe_text_through_scripts(
-      # [String] raw initial content 
-      parsed[:content], 
+    prefs.merge!(
+      (parsed[:frontend_matter] || {})
+    )
 
-      # [Array] of Scripts
-      arrayify(prefs['page']['scripts'])
+    post_content = pipe_text_through_scripts(
+      parsed[:content], arrayify(prefs['page']['scripts'])
     )
 
     post_content
@@ -184,11 +184,13 @@ class Incscript
           Dir.mkdir target_directory
         end
 
+
+        # Compile file, write to destination
+        compiled_file = compile_file(f, prefs)
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write(
-            compile_file(f, prefs)
-          )
+          f.write compiled_file
         end
+
       end
     end
   end
