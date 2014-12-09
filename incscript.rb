@@ -104,8 +104,10 @@ class Incscript
     # limitation: does not deal with markdown '---' nested within page content
     fem_string = ""; within_fem = false  
     File.open(file_path, 'r').read.each_line do |line|
-      ((within_fem = !within_fem) && next) if line.chomp == "---" 
-      puts "<#{line.chomp}>"
+      if line.chomp == "---" 
+        within_fem = !within_fem
+        next
+      end
 
       (within_fem ? fem_string : return_obj[:content]) << line
     end
@@ -143,6 +145,22 @@ class Incscript
         end
 
         parsed_file = parse_file f
+
+        scripts = prefs['page']['scripts'].class == Array ?
+          prefs['page']['scripts'] : [ prefs['page']['scripts'] ]
+        
+        scripts.each do |script|
+          if Dir.glob("#{@scripts}/*").map { |s|
+            s.dir_parts.last
+          }.include?(script) then
+            p "valid script"
+          else
+            p "invalid script"
+          end
+        end
+
+          
+
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
