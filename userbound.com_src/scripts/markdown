@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require 'redcarpet'
+
+renderer  = Redcarpet::Render::HTML
+redcarpet = Redcarpet::Markdown.new(renderer, extensions = {})
+$stdout.puts redcarpet.render ARGF.read.to_s
