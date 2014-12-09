@@ -184,13 +184,10 @@ class Incscript
           Dir.mkdir target_directory
         end
 
-
-        compiled_file = compile_file(f, prefs)
-
-        #file_prefs = YAML.load_file f
-        #@insc_prefs.merge! folder_prefs.merge file_prefs
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write compiled_file
+          f.write(
+            compile_file(f, prefs)
+          )
         end
       end
     end
