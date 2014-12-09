@@ -117,6 +117,22 @@ class Incscript
     return_obj
   end
 
+  def pipe_text_through_scripts(text_string, scripts_array)
+    buffer = text_string
+
+    scripts_array.each do |script|
+      if Dir.glob("#{@scripts}/*").map { |s|
+        s.dir_parts.last
+      }.include?(script) then
+        buffer = %x[echo #{Shellwords.escape buffer} | ./#{@scripts}/#{script} ]
+      else
+        # Invalid script file
+      end
+    end 
+
+    buffer
+  end
+
 
   def compile_folder(source_folder, imported_prefs = {}, destination_folder = nil)
     folder_prefs = (File.exists? "#{source_folder}/_incscript.yaml") ?  
@@ -151,25 +167,13 @@ class Incscript
 
         scripts = prefs['page']['scripts'].class == Array ?
           prefs['page']['scripts'] : [ prefs['page']['scripts'] ]
-       
-
-        buffer = parsed_file[:content]
-
-        scripts.each do |script|
-          if Dir.glob("#{@scripts}/*").map { |s|
-            s.dir_parts.last
-          }.include?(script) then
-            buffer = %x[echo #{Shellwords.escape buffer} | ./#{@scripts}/#{script} ]
-          else
-            # Invalid script file
-          end
-        end 
-
+    
+        post_content = pipe_text_through_scripts(parsed_file[:content], scripts)
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write buffer
+          f.write post_content
         end
       end
     end
