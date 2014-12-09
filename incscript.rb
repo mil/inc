@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'shellwords'
 require 'fileutils'
 
 # Colorizing strings
@@ -136,6 +137,8 @@ class Incscript
         target_directory = destination_folder
         target_file = f.dir_parts.last
 
+        puts "#{'Processing'.color(:red)} #{target_file.color(:blue)}"
+
         if @incscript_config['create_wrapper_folder']['extensions'].include? File.extname(f)[1..-1]
           created_folder   = File.basename(f, File.extname(f))
           target_directory = "#{destination_folder}/#{created_folder}"
@@ -148,26 +151,26 @@ class Incscript
 
         scripts = prefs['page']['scripts'].class == Array ?
           prefs['page']['scripts'] : [ prefs['page']['scripts'] ]
-        
+       
+
+        buffer = parsed_file[:content]
+
         scripts.each do |script|
           if Dir.glob("#{@scripts}/*").map { |s|
             s.dir_parts.last
           }.include?(script) then
-            p "valid script"
+            buffer = %x[echo #{Shellwords.escape buffer} | ./#{@scripts}/#{script} ]
           else
-            p "invalid script"
+            # Invalid script file
           end
-        end
-
-          
+        end 
 
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write parsed_file[:content]
+          f.write buffer
         end
-
       end
     end
   end
