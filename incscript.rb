@@ -92,8 +92,7 @@ class Incscript
   #fp_contents =  File.open(f) { |f| f.read }
 
 
-
-  def parse_file(file_path)
+  def extract_file_obj(fp)
     # Reads given file and returns an object 
     # with :frontend_matter and :content symbols
     # If file has no FEM, symbol will be nil
@@ -101,16 +100,15 @@ class Incscript
     #   :frontend_matter => {},
     #   :content => "content after FEM"
     # }
-    
-
-    return_obj = {
+    #
+     return_obj = {
       :frontend_matter => nil,
       :content         => ""
     }
 
     # limitation: does not deal with markdown '---' nested within page content
     fem_string = ""; within_fem = false  
-    File.open(file_path, 'r').read.each_line do |line|
+    File.open(fp, 'r').read.each_line do |line|
       if line.chomp == "---" 
         within_fem = !within_fem
         next
@@ -139,6 +137,23 @@ class Incscript
     buffer
   end
 
+  def compile_file(file_path, prefs)
+    parsed = extract_file_obj(file_path)
+
+    post_content = pipe_text_through_scripts(
+      # [String] raw initial content 
+      parsed[:content], 
+
+      # [Array] of Scripts
+      arrayify(prefs['page']['scripts'])
+    )
+
+    post_content
+  end
+
+
+
+
 
   def compile_folder(source_folder, imported_prefs = {}, destination_folder = nil)
     folder_prefs = (File.exists? "#{source_folder}/_incscript.yaml") ?  
@@ -159,7 +174,7 @@ class Incscript
         target_directory = destination_folder
         target_file = f.dir_parts.last
 
-        puts "#{'Processing'.color(:red)} #{target_file.color(:blue)}"
+        puts "#{'Compiling'.color(:red)} #{target_file.color(:blue)}"
 
         if @incscript_config['create_wrapper_folder']['extensions'].include? File.extname(f)[1..-1]
           created_folder   = File.basename(f, File.extname(f))
@@ -170,21 +185,12 @@ class Incscript
         end
 
 
-        parsed_file = parse_file f
-
-        post_content = pipe_text_through_scripts(
-          # [String] raw initial content 
-          parsed_file[:content], 
-
-          # [Array] of Scripts
-          arrayify(prefs['page']['scripts'])
-        )
-
+        compiled_file = compile_file(f, prefs)
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
         File.open("#{target_directory}/#{target_file}", 'w') do |f|
-          f.write post_content
+          f.write compiled_file
         end
       end
     end
