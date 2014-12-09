@@ -163,12 +163,18 @@ class Incscript
           Dir.mkdir target_directory
         end
 
+
         parsed_file = parse_file f
 
-        scripts = prefs['page']['scripts'].class == Array ?
-          prefs['page']['scripts'] : [ prefs['page']['scripts'] ]
-    
-        post_content = pipe_text_through_scripts(parsed_file[:content], scripts)
+        post_content = pipe_text_through_scripts(
+          # [String] raw initial content 
+          parsed_file[:content], 
+
+          # [Array] of Scripts
+          (prefs['page']['scripts'].class == Array ? 
+          prefs['page']['scripts'] : [ prefs['page']['scripts'] ])
+        )
+
 
         #file_prefs = YAML.load_file f
         #@insc_prefs.merge! folder_prefs.merge file_prefs
