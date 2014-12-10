@@ -5,19 +5,19 @@ require 'fileutils'
 
 # Colorizing strings
 class String
-	def color(c)
-		colors = { 
-			:black   => 30, 
-			:red     => 31, 
-			:green   => 32, 
-			:yellow  => 33, 
-			:blue    => 34, 
-			:magenta => 35, 
-			:cyan    => 36, 
-			:white   => 37 
-		}
-		"\e[#{colors[c] || c}m#{self}\e[0m"
-	end
+  def color(c)
+    colors = { 
+      :black   => 30, 
+      :red     => 31, 
+      :green   => 32, 
+      :yellow  => 33, 
+      :blue    => 34, 
+      :magenta => 35, 
+      :cyan    => 36, 
+      :white   => 37 
+    }
+    "\e[#{colors[c] || c}m#{self}\e[0m"
+  end
   def dir_parts
     self.split(File::SEPARATOR)
   end
