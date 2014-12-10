@@ -87,7 +87,8 @@ class Incscript
       ].join("\n")
     )
 
-    compile_folder( @filesystem, {}, destination_folder)
+    # Root folder
+    compile_folder( "", {}, destination_folder)
   end
 
   #fp_contents =  File.open(f) { |f| f.read }
@@ -111,12 +112,11 @@ class Incscript
     fem_string = ""; within_fem = false  
 
     # Just dealining with content inline
-    if !File.exists?(fp)
-      pp fp
+    if !File.exists?("#{@filesystem}/#{fp}")
       return_obj[:content] = fp
       return_obj
     else 
-      File.open(fp, 'r').read.each_line do |line|
+      File.open("#{@filesystem}/#{fp}", 'r').read.each_line do |line|
         if line.chomp == "---" 
           within_fem = !within_fem
           next
@@ -167,16 +167,12 @@ class Incscript
         [prefs['once_page_is_compiled']['postpends'] || [], after]
       ].each do |p|
         arrayify(p[0]).each do |f| 
-          p[1] <<  compile_file("#{@filesystem}/#{f}", {})
+          p[1] <<  compile_file(f, {})
         end
       end
     end
-
-
-    
-    pp prefs
-
-    post_content
+ 
+    "#{before}\n#{post_content}\n#{after}"
   end
 
 
@@ -184,8 +180,8 @@ class Incscript
 
 
   def compile_folder(source_folder, imported_prefs = {}, destination_folder = nil)
-    folder_prefs = (File.exists? "#{source_folder}/_incscript.yaml") ?  
-      (YAML.load_file "#{source_folder}/_incscript.yaml") : {}
+    folder_prefs = (File.exists? "#{@filesystem}/#{source_folder}/_incscript.yaml") ?  
+      (YAML.load_file "#{@filesystem}/#{source_folder}/_incscript.yaml") : {}
     prefs        = imported_prefs.merge! folder_prefs
 
     FileUtils.rm_rf destination_folder
@@ -193,10 +189,11 @@ class Incscript
 
 
     # Loop children files and folders 
-    Dir.glob("#{source_folder}/*").select do |f|
+    Dir.glob("#{@filesystem}#{source_folder}/*").select do |f|
       next if File.split(f).last[0] == '_'
+      f = f.split(@filesystem).last
 
-      if (File.directory? f) then
+      if (File.directory? "#{@filesystem}/#{f}") then
         compile_folder(f, prefs, "#{destination_folder}/#{f.dir_parts.last}")
       else
         target_directory = destination_folder
