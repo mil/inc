@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'pp'
 require 'shellwords'
 require 'fileutils'
 
@@ -108,17 +109,25 @@ class Incscript
 
     # limitation: does not deal with markdown '---' nested within page content
     fem_string = ""; within_fem = false  
-    File.open(fp, 'r').read.each_line do |line|
-      if line.chomp == "---" 
-        within_fem = !within_fem
-        next
+
+    # Just dealining with content inline
+    if !File.exists?(fp)
+      pp fp
+      return_obj[:content] = fp
+      return_obj
+    else 
+      File.open(fp, 'r').read.each_line do |line|
+        if line.chomp == "---" 
+          within_fem = !within_fem
+          next
+        end
+
+        (within_fem ? fem_string : return_obj[:content]) << line
       end
+      return_obj[:frontend_matter] = YAML.load fem_string
 
-      (within_fem ? fem_string : return_obj[:content]) << line
+      return_obj
     end
-    return_obj[:frontend_matter] = YAML.load fem_string
-
-    return_obj
   end
 
   def pipe_text_through_scripts(text_string, scripts_array)
@@ -144,9 +153,28 @@ class Incscript
       (parsed[:frontend_matter] || {})
     )
 
+    # Just straight up text include
+    return parsed[:content] if prefs == {}
+
     post_content = pipe_text_through_scripts(
       parsed[:content], arrayify(prefs['page']['scripts'])
     )
+
+    before = ""; after  = ""
+    if prefs['once_page_is_compiled'] then
+      [
+        [prefs['once_page_is_compiled']['prepends']  || [], before],
+        [prefs['once_page_is_compiled']['postpends'] || [], after]
+      ].each do |p|
+        arrayify(p[0]).each do |f| 
+          p[1] <<  compile_file("#{@filesystem}/#{f}", {})
+        end
+      end
+    end
+
+
+    
+    pp prefs
 
     post_content
   end
