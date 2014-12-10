@@ -48,6 +48,11 @@ module Utilities
     end
   end
 
+  # Not cross platform -- will need to revisit
+  def executable_exists?(executable_handle)
+    %x[which #{executable_handle} 2>/dev/null][0] == "/"
+  end
+
   def arrayify(string_or_array)
     string_or_array.class == Array ? 
       string_or_array : 
@@ -137,9 +142,9 @@ class Incscript
       if Dir.glob("#{@scripts}/*").map { |s|
         s.dir_parts.last
       }.include?(script) then
-        buffer = %x[echo #{Shellwords.escape buffer} | ./#{@scripts}/#{script} ]
-      else
-        # Invalid script file
+        buffer = %x[echo #{Shellwords.escape buffer.chomp} | ./#{@scripts}/#{script} ]
+      elsif executable_exists?(script) then
+        buffer = `echo #{Shellwords.escape buffer} | #{script}`
       end
     end 
 
