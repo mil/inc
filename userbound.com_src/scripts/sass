@@ -1,0 +1,2 @@
+#!/usr/bin/env ruby
+$stdout.puts %x[sass #{ARGF.read.to_s.chomp}]
