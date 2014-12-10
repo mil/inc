@@ -1,7 +1,5 @@
 ---
 page:
-  contents: 
-    - "_sass/all.sass"
   scripts: sass
 
 once_page_is_compiled: 
@@ -10,3 +8,4 @@ once_page_is_compiled:
   scripts:
     - minify_and_gzip_css
 ---
+userbound.com_src/filesystem/_sass/all.sass
