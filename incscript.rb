@@ -109,7 +109,7 @@ class Incscript
     # }
     #
      return_obj = {
-      :frontend_matter => nil,
+      :frontend_matter => {},
       :content         => ""
     }
 
@@ -119,7 +119,6 @@ class Incscript
     # Just dealining with content inline
     if !File.exists?("#{@filesystem}/#{fp}")
       return_obj[:content] = fp
-      return_obj
     else 
       File.open("#{@filesystem}/#{fp}", 'r').read.each_line do |line|
         if line.chomp == "---" 
@@ -131,8 +130,23 @@ class Incscript
       end
       return_obj[:frontend_matter] = YAML.load fem_string
 
-      return_obj
     end
+
+
+    # Has a contents property can reference
+    # to other file(s)
+    if (
+      return_obj[:frontend_matter] &&
+      return_obj[:frontend_matter]['page'] && 
+      return_obj[:frontend_matter]['page']['contents']
+    ) then
+      return_obj[:content] = ""
+      arrayify(return_obj[:frontend_matter]['page']['contents']).each do |p|
+        return_obj[:content] << compile_file(p, {})
+      end
+    end
+
+    return return_obj
   end
 
   def pipe_text_through_scripts(text_string, scripts_array)
@@ -146,13 +160,15 @@ class Incscript
       elsif executable_exists?(script) then
         buffer = `echo #{Shellwords.escape buffer} | #{script}`
       end
-    end 
 
+
+    end 
     buffer
   end
 
   def compile_file(file_path, prefs)
     parsed = extract_file_obj(file_path)
+
 
     prefs.merge!(
       (parsed[:frontend_matter] || {})
@@ -175,7 +191,16 @@ class Incscript
           p[1] <<  compile_file(f, {})
         end
       end
+
+      if prefs['once_page_is_compiled']['scripts'] then
+        post_content = pipe_text_through_scripts(
+          post_content, arrayify(prefs['once_page_is_compiled']['scripts'])
+        )
+      end
+
     end
+
+
  
     "#{before}\n#{post_content}\n#{after}"
   end
