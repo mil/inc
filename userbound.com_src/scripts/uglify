@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'uglifier'
+
+$stdout.puts Uglifier.compile(ARGF.read.to_s)
